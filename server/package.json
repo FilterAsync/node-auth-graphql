@@ -9,11 +9,11 @@
 	},
 	"scripts": {
 		"gen-env": "gen-env-types .env -o src/@types/env.d.ts -e .",
-		"build": "tsc -p tsconfig.build.json",
 		"server": "nodemon --ignore node_modules --ext .ts,.json --exec ts-node ./src/index",
-		"web": "SET BROWSER=none && npm start --prefix web",
+		"web": "SET BROWSER=none && cd .. && npm start --prefix web",
 		"dev": "concurrently \"npm run server\" \"npm run web\"",
-		"heroku:prebuild": "if exist dist rd dist"
+		"heroku:prebuild": "if exist dist rd dist",
+		"heroku:postbuild": "tsc -p tsconfig.build.json && cd ../web && npm install --only=dev && npm run build"
 	},
 	"devDependencies": {
 		"@types/cors": "^2.8.12",
