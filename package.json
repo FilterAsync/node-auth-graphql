@@ -1,0 +1,10 @@
+{
+	"private": true,
+  "name": "apollo",
+  "version": "0.1.0",
+  "main": "./server/dist/index.js",
+  "scripts": {
+		"heroku:prebuild": "if exist dist rd dist",
+		"heroku:postbuild": "cd server && tsc -p tsconfig.build.json && cd ../web && npm install --only=dev && npm run build"
+	}
+}
