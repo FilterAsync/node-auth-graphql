@@ -1,0 +1,3 @@
+mutation MarkAsCompleted($id: Int!) {
+    markAsCompleted(id: $id)
+}
