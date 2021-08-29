@@ -1,3 +1,0 @@
-mutation AddTask($name: String!) {
-    addTask(name: $name)
-}

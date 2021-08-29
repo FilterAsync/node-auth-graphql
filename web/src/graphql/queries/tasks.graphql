@@ -1,7 +1,0 @@
-query Tasks {
-    tasks {
-        id
-        name
-        completed
-    }
-}
