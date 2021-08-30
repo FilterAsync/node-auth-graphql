@@ -21,11 +21,13 @@ const port = +env.PORT || 5e3;
 
 	app.disable('x-powered-by');
 
-	app.set('trust proxy', 1);
+	if (__PROD__) {
+		app.set('trust proxy', 1);
+	}
 
 	app.use(
 		cors({
-			origin: env.CORS_ORIGIN,
+			origin: '*',
 			credentials: true,
 		})
 	);
@@ -45,8 +47,7 @@ const port = +env.PORT || 5e3;
 				// domain: __PROD__ ? '' : void 0
 			},
 			resave: false,
-			saveUninitialized: true,
-			unset: 'destroy',
+			saveUninitialized: false,
 		})
 	);
 

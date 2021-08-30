@@ -58,16 +58,17 @@ export type Query = {
 
 export type User = {
   __typename?: 'User';
+  id: Scalars['String'];
   username: Scalars['String'];
   email: Scalars['String'];
   password: Scalars['String'];
 };
 
-export type RegularAuthResponseFragment = { __typename?: 'AuthResponse', errors?: Maybe<Array<{ __typename?: 'FieldError', field?: Maybe<string>, message: string, type: string }>>, user?: Maybe<{ __typename?: 'User', username: string }> };
+export type RegularAuthResponseFragment = { __typename?: 'AuthResponse', errors?: Maybe<Array<{ __typename?: 'FieldError', field?: Maybe<string>, message: string, type: string }>>, user?: Maybe<{ __typename?: 'User', id: string, username: string }> };
 
 export type RegularErrorFragment = { __typename?: 'FieldError', field?: Maybe<string>, message: string, type: string };
 
-export type RegularUserFragment = { __typename?: 'User', username: string };
+export type RegularUserFragment = { __typename?: 'User', id: string, username: string };
 
 export type LoginMutationVariables = Exact<{
   usernameOrEmail: Scalars['String'];
@@ -75,19 +76,19 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'AuthResponse', errors?: Maybe<Array<{ __typename?: 'FieldError', field?: Maybe<string>, message: string, type: string }>>, user?: Maybe<{ __typename?: 'User', username: string }> } };
+export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'AuthResponse', errors?: Maybe<Array<{ __typename?: 'FieldError', field?: Maybe<string>, message: string, type: string }>>, user?: Maybe<{ __typename?: 'User', id: string, username: string }> } };
 
 export type RegisterMutationVariables = Exact<{
   credentials: Credentials;
 }>;
 
 
-export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'AuthResponse', errors?: Maybe<Array<{ __typename?: 'FieldError', field?: Maybe<string>, message: string, type: string }>>, user?: Maybe<{ __typename?: 'User', username: string }> } };
+export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'AuthResponse', errors?: Maybe<Array<{ __typename?: 'FieldError', field?: Maybe<string>, message: string, type: string }>>, user?: Maybe<{ __typename?: 'User', id: string, username: string }> } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: Maybe<{ __typename?: 'User', username: string }> };
+export type MeQuery = { __typename?: 'Query', me?: Maybe<{ __typename?: 'User', id: string, username: string }> };
 
 export const RegularErrorFragmentDoc = gql`
     fragment RegularError on FieldError {
@@ -98,6 +99,7 @@ export const RegularErrorFragmentDoc = gql`
     `;
 export const RegularUserFragmentDoc = gql`
     fragment RegularUser on User {
+  id
   username
 }
     `;

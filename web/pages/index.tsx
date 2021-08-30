@@ -1,12 +1,12 @@
-import type { NextPage } from 'next';
 import Head from 'next/head';
 
-const Index: NextPage = () => {
+const Index = () => {
 	return (
 		<>
 			<Head>
 				<title>Homepage</title>
 			</Head>
+			<div></div>
 		</>
 	);
 };

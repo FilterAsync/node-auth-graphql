@@ -9,8 +9,11 @@ body {
 	min-height: calc(100vh - 3rem);
 }
 
-strong, b, th, .semi-bold {
-  font-weight: 500 !important;
+strong,
+b,
+th,
+.semi-bold {
+	font-weight: 500 !important;
 }
 
 hr {
@@ -19,7 +22,7 @@ hr {
 }
 
 label.required::after {
-	content: " * ";
+	content: ' * ';
 	color: hsl(2, 82%, 46%);
 }
 

@@ -1,3 +1,5 @@
-export const __PROD__ = process.env.NODE_ENV === 'production';
+const { env } = process;
 
-export const COOKIE_NAME = 'sid';
+export const __PROD__ = env.NODE_ENV === 'production';
+
+export const COOKIE_NAME = 'qid';

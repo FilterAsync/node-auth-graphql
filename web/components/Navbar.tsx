@@ -1,12 +1,21 @@
 import React from 'react';
-import { Navbar as BSNavbar, Container, Nav } from 'react-bootstrap';
+import {
+	Navbar as BSNavbar,
+	Container,
+	Nav,
+} from 'react-bootstrap';
 
 const { Brand, Toggle, Collapse } = BSNavbar;
 const { Link } = Nav;
 
 const Navbar: React.FC<{}> = ({}) => {
 	return (
-		<BSNavbar bg="dark" variant="dark" fixed="top" expand="md">
+		<BSNavbar
+			bg="dark"
+			variant="dark"
+			fixed="top"
+			expand="md"
+		>
 			<Container fluid>
 				<Brand href="/">Company</Brand>
 				<Toggle aria-controls="basic-navbar-nav" />

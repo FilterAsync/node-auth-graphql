@@ -1,5 +1,5 @@
 mutation Register($credentials: Credentials!) {
-    register(credentials: $credentials) {
-        ...RegularAuthResponse
-    }
+	register(credentials: $credentials) {
+		...RegularAuthResponse
+	}
 }

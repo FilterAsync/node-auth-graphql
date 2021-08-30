@@ -9,11 +9,10 @@ import Head from 'next/head';
 import Label from '../components/RequiredLabel';
 import Center from '../components/Center';
 import BlockButton from '../components/BlockButton';
-import { NextPage } from 'next';
 
 const { Body, Title } = Card;
 
-const Login: NextPage = () => {
+const Login: React.FC<{}> = ({}) => {
 	return (
 		<>
 			<Head>
@@ -27,7 +26,12 @@ const Login: NextPage = () => {
 						<Form>
 							<Group className="mb-4">
 								<Label htmlFor="email">Email address</Label>
-								<Control id="email" name="email" type="email" required />
+								<Control
+									id="email"
+									name="email"
+									type="email"
+									required
+								/>
 							</Group>
 							<Group className="mb-4">
 								<Label htmlFor="password">Password</Label>
@@ -38,7 +42,9 @@ const Login: NextPage = () => {
 									required
 								/>
 							</Group>
-							<BlockButton type="submit">Log in</BlockButton>
+							<BlockButton type="submit">
+								Log in
+							</BlockButton>
 						</Form>
 					</Body>
 				</Card>

@@ -1,37 +1,31 @@
 {
-  "compilerOptions": {
-    "target": "ES6",
-    "lib": [
-			"ESNext",
-			"ESNext.AsyncIterable"
-		],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
+	"compilerOptions": {
+		"target": "ES6",
+		"lib": ["ESNext", "ESNext.AsyncIterable"],
+		"allowJs": true,
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"noFallthroughCasesInSwitch": true,
 		"sourceMap": true,
-    "module": "CommonJS",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
-    "removeComments": true,
-    "baseUrl": ".",
-    "noEmit": true,
+		"module": "CommonJS",
+		"moduleResolution": "Node",
+		"resolveJsonModule": true,
+		"removeComments": true,
+		"baseUrl": ".",
+		"noEmit": true,
 		"rootDir": "./src",
 		"outDir": "./dist",
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
 		"paths": {
-			"*": [
-				"node_modules/*",
-				"src/@types/*"
-			]
+			"*": ["node_modules/*", "src/@types/*"]
 		}
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", "**/tests/**"],
+	},
+	"include": ["src"],
+	"exclude": ["node_modules", "**/tests/**"],
 	"ts-node": {
 		"files": true
 	}

@@ -51,7 +51,9 @@ export class UserResolver {
 		@Ctx() { req }: AuthContext
 	): Promise<AuthResponse> {
 		const user = await UserModel.findOne({
-			[usernameOrEmail.includes('@') ? 'email' : 'username']: usernameOrEmail,
+			[usernameOrEmail.includes('@')
+				? 'email'
+				: 'username']: usernameOrEmail,
 		});
 
 		if (!user || !(await user!.comparePassword(password))) {
@@ -77,13 +79,15 @@ export class UserResolver {
 		{ username, email, password }: Credentials,
 		@Ctx() { req }: AuthContext
 	): Promise<AuthResponse> {
-		const [usernameExists, emailExists] = await Promise.all([
-			UserModel.exists({ username }),
-			UserModel.exists({ email }),
-		]);
+		const [usernameExists, emailExists] = await Promise.all(
+			[
+				UserModel.exists({ username }),
+				UserModel.exists({ email }),
+			]
+		);
 
 		if (usernameExists || emailExists) {
-			const field = emailExists ? 'email' : 'username';
+			const field = usernameExists ? 'username' : 'email';
 
 			return {
 				errors: [
@@ -98,7 +102,15 @@ export class UserResolver {
 			};
 		}
 
-		const user = new UserModel({ username, email, password });
+		const user = new UserModel({
+			username,
+			email,
+			password,
+		});
+
+		const avatar = user.gravatar();
+		user.avatar = avatar;
+
 		await user.save();
 
 		req.session!.userId = user.id;
@@ -107,7 +119,9 @@ export class UserResolver {
 	}
 
 	@Mutation(() => Boolean)
-	logout(@Ctx() { req, res }: AuthContext): Promise<boolean> {
+	logout(
+		@Ctx() { req, res }: AuthContext
+	): Promise<boolean> {
 		return new Promise((resolve) => {
 			req.session!.destroy((err) => {
 				// clear the cookie before the error occurs

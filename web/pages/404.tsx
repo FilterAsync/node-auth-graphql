@@ -1,15 +1,15 @@
 import Head from 'next/head';
-import type { NextPage } from 'next';
+import Center from '../components/Center';
 
-const NotFound: NextPage = () => {
+const NotFound: React.FC<{}> = ({}) => {
 	return (
 		<>
 			<Head>
 				<title>404</title>
 			</Head>
-			<div className="center">
-				<h1>404 - Page not found</h1>
-			</div>
+			<Center>
+				<h1>404 - Page Not Found</h1>
+			</Center>
 		</>
 	);
 };

@@ -11,6 +11,7 @@
   "dependencies": {
     "@apollo/client": "^3.4.10",
     "bootstrap": "^5.1.0",
+    "classnames": "^2.3.1",
     "graphql": "^15.5.1",
     "next": "11.1.0",
     "next-urql": "^3.2.1",

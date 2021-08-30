@@ -1,12 +1,15 @@
 import React from 'react';
+import classNames from 'classnames';
 import { Container } from 'react-bootstrap';
 
-const Center: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
-	children,
-	...props
-}) => {
+const Center: React.FC<
+	React.HTMLAttributes<HTMLDivElement>
+> = ({ children, className, ...props }) => {
 	return (
-		<Container className="center" {...props}>
+		<Container
+			className={classNames('center', className)}
+			{...props}
+		>
 			{children}
 		</Container>
 	);
