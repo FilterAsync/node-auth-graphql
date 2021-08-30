@@ -17,7 +17,7 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "removeComments": true,
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "noEmit": true,
 		"rootDir": "./src",
 		"outDir": "./dist",

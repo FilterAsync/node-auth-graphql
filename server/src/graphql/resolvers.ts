@@ -3,75 +3,99 @@ import {
 	Query,
 	Resolver,
 	Mutation,
-	Args,
-	ArgsType,
-	Field,
 	Ctx,
+	Arg,
+	ObjectType,
+	Field,
 } from 'type-graphql';
-import { Unauthorized, Conflict } from 'http-errors';
 import { AuthContext } from '../types';
 import { COOKIE_NAME } from '../constants';
+import { Credentials } from './Credentials';
 
-@ArgsType()
-class LoginArgs {
-	@Field(() => String)
-	email!: string;
+@ObjectType()
+class FieldError {
+	@Field(() => String, { nullable: true })
+	field!: null | string;
 
-	@Field(() => String)
-	password!: string;
+	@Field()
+	message!: string;
+
+	@Field()
+	type!: 'validation' | 'field' | 'auth' | 'unknown';
 }
 
-@ArgsType()
-class RegisterArgs {
-	@Field(() => String)
-	username!: string;
+@ObjectType()
+class AuthResponse {
+	@Field(() => [FieldError], { nullable: true })
+	errors?: FieldError[];
 
-	@Field(() => String)
-	email!: string;
-
-	@Field(() => String)
-	password!: string;
+	@Field(() => User, { nullable: true })
+	user?: User;
 }
 
-// todo: implement user resolver
 @Resolver()
 export class UserResolver {
 	@Query(() => User, { nullable: true })
 	me(@Ctx() { req }: AuthContext) {
-		if (!req.session!.userId) {
+		const userId = req.session!.userId;
+		if (!userId) {
 			return null;
 		}
-		return UserModel.findById(req.session!.userId);
+		return UserModel.findById(userId);
 	}
 
-	@Mutation(() => Boolean)
+	@Mutation(() => AuthResponse)
 	async login(
-		@Args() { email, password }: LoginArgs,
+		@Arg('usernameOrEmail') usernameOrEmail: string,
+		@Arg('password') password: string,
 		@Ctx() { req }: AuthContext
-	) {
-		const user = await UserModel.findOne({ email });
+	): Promise<AuthResponse> {
+		const user = await UserModel.findOne({
+			[usernameOrEmail.includes('@') ? 'email' : 'username']: usernameOrEmail,
+		});
 
 		if (!user || !(await user!.comparePassword(password))) {
-			throw new Unauthorized('Invalid credentials');
+			return {
+				errors: [
+					{
+						field: null,
+						message: 'Invalid credentials.',
+						type: 'auth',
+					},
+				],
+			};
 		}
 
 		req.session!.userId = user.id;
 
-		return true;
+		return { user };
 	}
 
-	@Mutation(() => Boolean)
+	@Mutation(() => AuthResponse)
 	async register(
-		@Args() { username, email, password }: RegisterArgs,
+		@Arg('credentials')
+		{ username, email, password }: Credentials,
 		@Ctx() { req }: AuthContext
-	) {
-		const [usernameExist, emailExist] = await Promise.all([
+	): Promise<AuthResponse> {
+		const [usernameExists, emailExists] = await Promise.all([
 			UserModel.exists({ username }),
 			UserModel.exists({ email }),
 		]);
 
-		if (usernameExist || emailExist) {
-			throw new Conflict('username or email already exists');
+		if (usernameExists || emailExists) {
+			const field = emailExists ? 'email' : 'username';
+
+			return {
+				errors: [
+					{
+						field,
+						message: `${field.replace(/^\w/, (char) =>
+							char.toUpperCase()
+						)} already exists`,
+						type: 'field',
+					},
+				],
+			};
 		}
 
 		const user = new UserModel({ username, email, password });
@@ -79,13 +103,14 @@ export class UserResolver {
 
 		req.session!.userId = user.id;
 
-		return true;
+		return { user };
 	}
 
 	@Mutation(() => Boolean)
-	logout(@Ctx() { req, res }: AuthContext) {
+	logout(@Ctx() { req, res }: AuthContext): Promise<boolean> {
 		return new Promise((resolve) => {
 			req.session!.destroy((err) => {
+				// clear the cookie before the error occurs
 				res.clearCookie(COOKIE_NAME);
 				if (err) {
 					console.error(err);

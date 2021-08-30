@@ -1,3 +1,5 @@
 query Me {
-    me
+    me {
+        ...RegularUser
+    }
 }
