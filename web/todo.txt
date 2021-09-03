@@ -1,7 +1,0 @@
-responsive webpage
-
-implement apollo client with urql
-
-proxy server
-
-server side rendering

@@ -1,4 +1,6 @@
-A modern web authentication built essentially with GraphQL.
+# react-apollo
+
+A modern web authentication built essentially with React and GraphQL.
 
 ## Notable Technologies
 

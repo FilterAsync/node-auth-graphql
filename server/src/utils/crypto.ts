@@ -2,15 +2,17 @@ import { hash, verify } from 'argon2';
 import { createHash, BinaryToTextEncoding } from 'crypto';
 
 export const sha256 = (
-	value: string,
+	plaintext: string,
 	encoding: BinaryToTextEncoding
-) => createHash('sha256').update(value).digest(encoding);
+) =>
+	createHash('sha256').update(plaintext).digest(encoding);
 
-// timing safe
+// pre-hash plaintext passwords before hashing them to argon2
 export const hashPassword = (password: string) =>
-	hash(sha256(password, 'hex'));
+	hash(sha256(password, 'base64'));
 
 export const comparePassword = (
-	password1: string,
-	password2: string
-) => verify(password2, sha256(password1, 'hex'));
+	plainPassword: string,
+	hashedPassword: string
+) =>
+	verify(hashedPassword, sha256(plainPassword, 'base64'));

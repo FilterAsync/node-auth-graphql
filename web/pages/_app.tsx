@@ -1,16 +1,22 @@
 import type { AppProps } from 'next/app';
-import Navbar from '../components/Navbar';
-import { Provider } from 'urql';
+import Head from 'next/head';
 import '../styles/index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { client } from '../config/client';
 
 const App = ({ Component, pageProps }: AppProps) => {
 	return (
-		<Provider value={client}>
-			<Navbar />
+		<>
+			<Head>
+				{/* some SEO improvements */}
+				<link
+					rel="shortcut icon"
+					href="favicon.ico"
+					type="image/x-icon"
+				/>
+				<meta name="theme-color" content="#ffffff" />
+			</Head>
 			<Component {...pageProps} />
-		</Provider>
+		</>
 	);
 };
 

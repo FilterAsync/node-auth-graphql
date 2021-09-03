@@ -15,9 +15,9 @@
 		"resolveJsonModule": true,
 		"removeComments": true,
 		"baseUrl": ".",
-		"noEmit": true,
-		"rootDir": "./src",
-		"outDir": "./dist",
+		"noUnusedLocals": true,
+		"rootDir": "src",
+		"outDir": "dist",
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
 		"paths": {
@@ -25,7 +25,6 @@
 		}
 	},
 	"include": ["src"],
-	"exclude": ["node_modules", "**/tests/**"],
 	"ts-node": {
 		"files": true
 	}

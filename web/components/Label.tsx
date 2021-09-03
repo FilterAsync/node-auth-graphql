@@ -1,18 +1,28 @@
-import React from 'react';
 import {
 	FormLabel as BSLabel,
 	FormLabelProps,
 } from 'react-bootstrap';
+import classNames from 'classnames';
 
-const Label: React.FC<FormLabelProps> = ({
+export type LabelProps = FormLabelProps & {
+	required?: boolean;
+};
+
+export const Label: React.FC<LabelProps> = ({
 	children,
+	className,
+	required,
 	...props
 }) => {
 	return (
-		<BSLabel {...props}>
+		<BSLabel
+			className={classNames(
+				required && 'required',
+				className
+			)}
+			{...props}
+		>
 			<strong>{children}</strong>
 		</BSLabel>
 	);
 };
-
-export default Label;

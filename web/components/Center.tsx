@@ -1,10 +1,15 @@
-import React from 'react';
 import classNames from 'classnames';
-import { Container } from 'react-bootstrap';
+import { HTMLAttributes } from 'react';
+import { Container, ContainerProps } from 'react-bootstrap';
 
-const Center: React.FC<
-	React.HTMLAttributes<HTMLDivElement>
-> = ({ children, className, ...props }) => {
+type CenterProps = ContainerProps &
+	HTMLAttributes<HTMLDivElement> & {};
+
+export const Center: React.FC<CenterProps> = ({
+	children,
+	className,
+	...props
+}) => {
 	return (
 		<Container
 			className={classNames('center', className)}
@@ -14,5 +19,3 @@ const Center: React.FC<
 		</Container>
 	);
 };
-
-export default Center;

@@ -1,7 +1,8 @@
-import React from 'react';
 import { Button, ButtonProps } from 'react-bootstrap';
 
-const BlockButton: React.FC<ButtonProps> = ({
+export type BlockButtonProps = ButtonProps & {};
+
+export const BlockButton: React.FC<BlockButtonProps> = ({
 	children,
 	size,
 	...props
@@ -14,5 +15,3 @@ const BlockButton: React.FC<ButtonProps> = ({
 		</div>
 	);
 };
-
-export default BlockButton;

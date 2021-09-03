@@ -1,5 +1,6 @@
-const { env } = process;
-
-export const __PROD__ = env.NODE_ENV === 'production';
+export const __PROD__ =
+	process.env.NODE_ENV === 'production';
 
 export const COOKIE_NAME = 'qid';
+
+export const FORGOT_PASSWORD_PREFIX = 'fp:';
