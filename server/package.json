@@ -5,7 +5,7 @@
 	"scripts": {
 		"gen-env": "gen-env-types .env -o src/@types/env.d.ts -e .",
 		"build": "tsc -p tsconfig.build.json",
-		"dev": "nodemon --ignore node_modules --ext .ts,.json --exec ts-node src/index"
+		"dev": "SET NODE_ENV=development && nodemon --ext .ts,.json --exec ts-node src/index"
 	},
 	"dependencies": {
 		"@typegoose/typegoose": "^8.2.0",

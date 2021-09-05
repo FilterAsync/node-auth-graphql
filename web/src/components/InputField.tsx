@@ -1,5 +1,5 @@
 import { useField } from 'formik';
-import { InputHTMLAttributes } from 'react';
+import type { InputHTMLAttributes } from 'react';
 import { Label } from '.';
 import {
 	FormGroup,
@@ -23,9 +23,10 @@ export const InputField: React.FC<InputFieldProps> = ({
 	error,
 	required,
 	isInvalid,
+	className,
 	...props
 }) => {
-	const [field, { error: formError }] = useField(name);
+	const [field, { error: fieldError }] = useField(name);
 
 	return (
 		<FormGroup className="mb-4">
@@ -35,7 +36,7 @@ export const InputField: React.FC<InputFieldProps> = ({
 			<FormControl
 				id={field.name}
 				required={required}
-				isInvalid={!!formError}
+				isInvalid={error ? !!fieldError : undefined}
 				{...field}
 				{...props}
 			/>
@@ -43,3 +44,5 @@ export const InputField: React.FC<InputFieldProps> = ({
 		</FormGroup>
 	);
 };
+
+InputField.displayName = 'InputField';

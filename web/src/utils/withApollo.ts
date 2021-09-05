@@ -2,8 +2,9 @@ import {
 	ApolloClient,
 	InMemoryCache,
 } from '@apollo/client';
-import { withApollo as _withApollo } from 'next-apollo';
+import { withApollo } from 'next-apollo';
 import { NextPageContext } from 'next';
+import { isServerSide } from '.';
 
 const apolloClient = (ctx?: NextPageContext) => {
 	return new ApolloClient({
@@ -11,12 +12,10 @@ const apolloClient = (ctx?: NextPageContext) => {
 		credentials: 'include',
 		headers: {
 			cookie:
-				(typeof window === 'undefined' &&
-					ctx?.req?.headers.cookie) ||
-				'',
+				(isServerSide && ctx?.req?.headers.cookie) || '',
 		},
 		cache: new InMemoryCache(),
 	});
 };
 
-export const withApollo = _withApollo(apolloClient);
+export default withApollo(apolloClient);

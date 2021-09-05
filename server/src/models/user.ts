@@ -57,7 +57,7 @@ export class User {
 	comparePassword(password: string) {
 		return comparePassword(password, this.password);
 	}
-	gravatar(size: number = 64) {
+	gravatar(size: number = 96) {
 		const hash = crypto
 			.createHash('md5')
 			.update(this.email)

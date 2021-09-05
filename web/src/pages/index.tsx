@@ -2,8 +2,9 @@ import Head from 'next/head';
 import { useIsAuth, withApollo } from '../utils';
 import { Image } from 'react-bootstrap';
 import { Layout } from '../components';
+import type { NextPage } from 'next';
 
-const Index = () => {
+const Index: NextPage = () => {
 	const { data } = useIsAuth();
 
 	if (!data?.me) {
@@ -20,6 +21,8 @@ const Index = () => {
 					<Image
 						src={data.me.avatar}
 						alt={`${data.me.username}'s avatar`}
+						width={64}
+						height={64}
 						roundedCircle
 					/>
 					<p className="ms-2 d-inline">

@@ -2,8 +2,19 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import '../styles/index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import type { NextWebVitalsMetric } from 'next/app';
+import type { NextPage } from 'next';
 
-const App = ({ Component, pageProps }: AppProps) => {
+export function reportWebVitals(
+	metric: NextWebVitalsMetric
+) {
+	console.dir(metric);
+}
+
+const App: NextPage<AppProps> = ({
+	Component,
+	pageProps,
+}) => {
 	return (
 		<>
 			<Head>

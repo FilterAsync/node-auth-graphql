@@ -2,7 +2,7 @@ export * from './isServer';
 
 export * from './toErrorMap';
 
-export * from './withApollo';
+export { default as withApollo } from './withApollo';
 
 export * from './auth';
 

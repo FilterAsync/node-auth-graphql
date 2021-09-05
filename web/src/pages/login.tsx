@@ -9,13 +9,14 @@ import Link from 'next/link';
 import {
 	BlockButton,
 	InputField,
-	Center,
+	Layout,
 } from '../components';
 import { toErrorMap, withApollo } from '../utils';
 import { Formik, Form } from 'formik';
 import { useRouter } from 'next/router';
+import { NextPage } from 'next';
 
-const Login: React.FC<{}> = ({}) => {
+const Login: NextPage = () => {
 	const router = useRouter();
 	const [login] = useLoginMutation();
 
@@ -24,7 +25,7 @@ const Login: React.FC<{}> = ({}) => {
 			<Head>
 				<title>Login</title>
 			</Head>
-			<Center>
+			<Layout center>
 				<Card className="card-responsive shadow">
 					<Card.Body>
 						<h4 className="card-title">Login</h4>
@@ -41,46 +42,50 @@ const Login: React.FC<{}> = ({}) => {
 										cache.writeQuery<MeQuery>({
 											query: MeDocument,
 											data: {
-												me: data?.login?.user,
+												me: data?.login.user,
 											},
 										});
 									},
 								});
 
 								const { data } = response;
-								const errors = data?.login.errors;
+								const { errors, user } = data?.login!;
 
 								if (errors) {
 									setErrors(toErrorMap(errors));
-								} else if (data?.login.user) {
+								} else if (user) {
 									const {
 										query: { returnUrl: _next },
 									} = router;
 
-									let next;
+									let next = '/';
 
 									try {
-										next = decodeURIComponent(
-											_next as string
-										);
+										if (_next) {
+											next = decodeURIComponent(
+												_next.toString()
+											);
+										}
 									} catch (err) {
 										// URI malformed error
 										console.error(err);
 									} finally {
-										router.push(next || '/');
+										router.push(next);
 									}
 								}
 							}}
 						>
-							{({ isSubmitting, errors }) => (
+							{({
+								isSubmitting,
+								errors: { usernameOrEmail, password },
+							}) => (
 								<Form autoComplete="on" noValidate>
 									<InputField
 										label="Username/Email address"
 										autoComplete="username"
 										name="usernameOrEmail"
-										type="text"
 										disabled={isSubmitting}
-										error={errors.usernameOrEmail}
+										error={usernameOrEmail}
 										required
 									/>
 									<InputField
@@ -89,12 +94,11 @@ const Login: React.FC<{}> = ({}) => {
 										name="password"
 										type="password"
 										disabled={isSubmitting}
-										error={errors.password}
+										error={password}
 										required
 									/>
 									<BlockButton
 										type="submit"
-										title="Submit"
 										disabled={isSubmitting}
 									>
 										Log in
@@ -115,7 +119,7 @@ const Login: React.FC<{}> = ({}) => {
 						</Formik>
 					</Card.Body>
 				</Card>
-			</Center>
+			</Layout>
 		</>
 	);
 };

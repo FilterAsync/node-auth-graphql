@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 import { Container, ContainerProps } from 'react-bootstrap';
 
 type CenterProps = ContainerProps &
@@ -19,3 +19,5 @@ export const Center: React.FC<CenterProps> = ({
 		</Container>
 	);
 };
+
+Center.displayName = 'Center';

@@ -10,12 +10,13 @@ import { Formik, Form } from 'formik';
 import {
 	BlockButton,
 	InputField,
-	Center,
+	Layout,
 } from '../components';
 import router from 'next/router';
 import Head from 'next/head';
+import { NextPage } from 'next';
 
-const Register: React.FC<{}> = ({}) => {
+const Register: NextPage = () => {
 	const [register] = useRegisterMutation();
 
 	return (
@@ -23,10 +24,11 @@ const Register: React.FC<{}> = ({}) => {
 			<Head>
 				<title>Register</title>
 			</Head>
-			<Center>
+			<Layout center>
 				<Card className="card-responsive shadow">
 					<Card.Body>
 						<h4 className="card-title">Register</h4>
+						<hr />
 						<Formik
 							initialValues={{
 								username: '',
@@ -42,7 +44,7 @@ const Register: React.FC<{}> = ({}) => {
 										cache.writeQuery<MeQuery>({
 											query: MeDocument,
 											data: {
-												me: data?.register?.user,
+												me: data?.register.user,
 											},
 										});
 									},
@@ -59,12 +61,11 @@ const Register: React.FC<{}> = ({}) => {
 								}
 							}}
 						>
-							{({ errors, isSubmitting }) => {
+							{({ isSubmitting, errors }) => {
 								type Fields =
 									| 'username'
 									| 'email'
 									| 'password';
-
 								return (
 									<Form noValidate autoComplete="on">
 										{['username', 'email', 'password'].map(
@@ -103,7 +104,7 @@ const Register: React.FC<{}> = ({}) => {
 										>
 											Register
 										</BlockButton>
-										<div className="mt-4 card-footer-links">
+										<div className="card-footer-links">
 											<Link href="/login">
 												Already have an account
 											</Link>
@@ -121,7 +122,7 @@ const Register: React.FC<{}> = ({}) => {
 						</Formik>
 					</Card.Body>
 				</Card>
-			</Center>
+			</Layout>
 		</>
 	);
 };

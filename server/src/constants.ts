@@ -4,3 +4,7 @@ export const __PROD__ =
 export const COOKIE_NAME = 'qid';
 
 export const FORGOT_PASSWORD_PREFIX = 'fp:';
+
+export const CORS_ORIGIN = __PROD__
+	? ''
+	: 'http://localhost:3000';

@@ -9,10 +9,11 @@ import {
 	useLogoutMutation,
 	useMeQuery,
 } from '../generated';
+import Link from 'next/link';
 import { isServerSide } from '../utils';
+import { Form, Button } from 'react-bootstrap';
 
 const { Brand, Toggle, Collapse } = BSNavbar;
-const { Link } = Nav;
 
 export const Navbar: React.FC<{}> = ({}) => {
 	const [logout, { loading: logoutFetching }] =
@@ -33,26 +34,36 @@ export const Navbar: React.FC<{}> = ({}) => {
 		} else if (!data?.me) {
 			setNavLinks(
 				<>
-					<Link href="/login">Login</Link>
-					<Link href="/register">Register</Link>
+					<Link href="/login" passHref>
+						<Nav.Link>Login</Nav.Link>
+					</Link>
+					<Link href="/register" passHref>
+						<Nav.Link>Register</Nav.Link>
+					</Link>
 				</>
 			);
 		} else {
 			setNavLinks(
-				<>
-					<Link
-						href="#"
+				<Form
+					className="d-flex"
+					onSubmit={async (event) => {
+						event.preventDefault();
+						await Promise.all([
+							logout(),
+							apollo.resetStore(),
+						]);
+					}}
+				>
+					<Button
+						type="submit"
 						disabled={logoutFetching}
-						onClick={async () => {
-							await Promise.all([
-								logout(),
-								apollo.resetStore(),
-							]);
-						}}
+						variant="link"
+						className="nav-link"
+						role="link"
 					>
 						Logout
-					</Link>
-				</>
+					</Button>
+				</Form>
 			);
 		}
 	}, [loading, data?.me]);
@@ -65,11 +76,15 @@ export const Navbar: React.FC<{}> = ({}) => {
 			expand="sm"
 		>
 			<Container fluid>
-				<Brand href="/">Company</Brand>
-				<Toggle aria-controls="basic-navbar-nav" />
-				<Collapse id="basic-navbar-nav">
+				<Link href="/" passHref>
+					<Brand>Company</Brand>
+				</Link>
+				<Toggle aria-controls="navbar" />
+				<Collapse id="navbar">
 					<Nav className="me-auto">
-						<Link href="/">Home</Link>
+						<Link href="/" passHref>
+							<Nav.Link>Home</Nav.Link>
+						</Link>
 					</Nav>
 					<Nav>{NavLinks}</Nav>
 				</Collapse>
@@ -77,3 +92,5 @@ export const Navbar: React.FC<{}> = ({}) => {
 		</BSNavbar>
 	);
 };
+
+Navbar.displayName = 'Navbar';

@@ -2,19 +2,22 @@ import 'reflect-metadata';
 import 'dotenv-safe/config';
 import { buildSchema } from 'type-graphql';
 import { ApolloServer } from 'apollo-server-express';
-import { UserResolver } from './graphql';
+import { UserResolver, authChecker } from './graphql';
 import cors from 'cors';
 import express from 'express';
 import morgan from 'morgan';
 import session from 'express-session';
-import { COOKIE_NAME, __PROD__ } from './constants';
+import {
+	COOKIE_NAME,
+	CORS_ORIGIN,
+	__PROD__,
+} from './constants';
 import mongoose from 'mongoose';
 import compression from 'compression';
 import { v4 } from 'uuid';
 import crypto from 'crypto';
 import Redis from 'ioredis';
 import connectRedis from 'connect-redis';
-import { authChecker } from './graphql';
 import helmet from 'helmet';
 
 const { env } = process;
@@ -30,7 +33,7 @@ const port = env.PORT || 5e3;
 
 	app.use(
 		cors({
-			origin: env.CORS_ORIGIN,
+			origin: CORS_ORIGIN,
 			credentials: true,
 		})
 	);
@@ -151,7 +154,9 @@ const port = env.PORT || 5e3;
 	await apolloServer.start();
 	apolloServer.applyMiddleware({
 		app: app as any,
-		cors: false,
+		cors: {
+			origin: CORS_ORIGIN,
+		},
 	});
 
 	app.listen({ port }, () => {

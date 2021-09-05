@@ -1,4 +1,4 @@
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 import { Container, ContainerProps } from 'react-bootstrap';
 import { Navbar, Center } from '.';
 
@@ -10,6 +10,7 @@ export type LayoutProps = ContainerProps &
 export const Layout: React.FC<LayoutProps> = ({
 	center,
 	children,
+	className,
 	...props
 }) => {
 	const Wrapper = center ? Center : Container;
@@ -21,3 +22,5 @@ export const Layout: React.FC<LayoutProps> = ({
 		</>
 	);
 };
+
+Layout.displayName = 'Layout';

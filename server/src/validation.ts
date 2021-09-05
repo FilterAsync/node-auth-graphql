@@ -24,3 +24,7 @@ export const registerSchema = Joi.object().keys({
 	email,
 	password,
 });
+
+export const forgotPasswordSchema = Joi.object().keys({
+	password,
+});

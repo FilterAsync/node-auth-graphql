@@ -10,16 +10,24 @@ import {
 	Authorized,
 	UseMiddleware,
 } from 'type-graphql';
-import { AuthContext } from '../types';
+import { AppContext } from '../types';
 import {
 	COOKIE_NAME,
 	FORGOT_PASSWORD_PREFIX,
 } from '../constants';
 import { Credentials } from './Credentials';
-import { registerSchema } from '../validation';
-import { logIn, sendMail } from '../utils';
-import crypto from 'crypto';
+import {
+	forgotPasswordSchema,
+	registerSchema,
+} from '../validation';
+import {
+	logIn,
+	sendMail,
+	resetPassword,
+	hashToken,
+} from '../utils';
 import { guest } from './auth';
+import { CORS_ORIGIN } from '../constants';
 
 @ObjectType()
 class FieldError {
@@ -42,7 +50,7 @@ class AuthResponse {
 @Resolver()
 export class UserResolver {
 	@Query(() => User, { nullable: true })
-	me(@Ctx() { req }: AuthContext) {
+	me(@Ctx() { req }: AppContext) {
 		const { userId } = req.session!;
 		if (!userId) {
 			return null;
@@ -55,7 +63,7 @@ export class UserResolver {
 	async login(
 		@Arg('usernameOrEmail') usernameOrEmail: string,
 		@Arg('password') password: string,
-		@Ctx() { req }: AuthContext
+		@Ctx() { req }: AppContext
 	): Promise<AuthResponse> {
 		if (!usernameOrEmail || !password) {
 			const field = !usernameOrEmail
@@ -109,7 +117,7 @@ export class UserResolver {
 	async register(
 		@Arg('credentials')
 		{ username, email, password }: Credentials,
-		@Ctx() { req }: AuthContext
+		@Ctx() { req }: AppContext
 	): Promise<AuthResponse> {
 		const { error } = registerSchema.validate({
 			username,
@@ -162,10 +170,11 @@ export class UserResolver {
 		return { user };
 	}
 
+	@UseMiddleware(guest)
 	@Mutation(() => Boolean)
 	async forgotPassword(
 		@Arg('email') email: string,
-		@Ctx() { redis }: AuthContext
+		@Ctx() { redis }: AppContext
 	) {
 		const user = await UserModel.findOne({ email });
 		if (!user) {
@@ -174,7 +183,10 @@ export class UserResolver {
 			// return false;
 		}
 
-		const token = crypto.randomBytes(32).toString('hex');
+		const token = await hashToken(email);
+
+		// one-time-only
+		await redis.del(token);
 
 		await redis.set(
 			FORGOT_PASSWORD_PREFIX + token,
@@ -184,20 +196,81 @@ export class UserResolver {
 		);
 
 		await sendMail({
-			to: user.email,
+			to: email,
 			subject: 'Forgot password',
 			html: `
-				<a href="http://localhost:3000/change-password/${token}">reset password</a>
+				<a href="${CORS_ORIGIN}/reset-password/${token}">reset password</a>
 			`,
 		});
 
 		return true;
 	}
 
+	@UseMiddleware(guest)
+	@Mutation(() => AuthResponse)
+	async resetPassword(
+		@Arg('token') token: string,
+		@Arg('password') password: string,
+		@Ctx() { req, redis }: AppContext
+	): Promise<AuthResponse> {
+		const { error } = forgotPasswordSchema.validate({
+			password,
+		});
+
+		if (error) {
+			return {
+				errors: [
+					{
+						field: 'password',
+						message: error.message,
+					},
+				],
+			};
+		}
+
+		const key = FORGOT_PASSWORD_PREFIX + token;
+		const userId = await redis.get(key);
+
+		if (!userId) {
+			return {
+				errors: [
+					{
+						field: 'token',
+						message:
+							'this token does not exists or expired',
+					},
+				],
+			};
+		}
+
+		const user = await UserModel.findById(userId);
+
+		// should be unreachable because
+		// we don't implement the "remove account" feature
+		if (!user) {
+			return {
+				errors: [
+					{
+						field: 'token',
+						message: 'user no longer exists',
+					},
+				],
+			};
+		}
+
+		await Promise.all([
+			redis.del(key),
+			resetPassword(user, password),
+			logIn(req, user.id),
+		]);
+
+		return { user };
+	}
+
 	@Authorized()
 	@Mutation(() => Boolean)
 	logout(
-		@Ctx() { req, res }: AuthContext
+		@Ctx() { req, res }: AppContext
 	): Promise<boolean> {
 		return new Promise((resolve) =>
 			req.session!.destroy((err) => {
