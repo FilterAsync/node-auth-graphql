@@ -1,14 +1,17 @@
 import { useRouter } from 'next/router';
-import { toErrorMap, withApollo } from '../../utils';
-import { Center } from '../../components';
+import { toErrorMap, withApollo } from '../utils';
 import Head from 'next/head';
 import { Formik, Form } from 'formik';
 import {
 	MeDocument,
 	MeQuery,
 	useResetPasswordMutation,
-} from '../../generated';
-import { InputField, BlockButton } from '../../components';
+} from '../generated';
+import {
+	Center,
+	InputField,
+	BlockButton,
+} from '../components';
 import { useState } from 'react';
 import { Alert } from 'react-bootstrap';
 import Link from 'next/link';
@@ -16,14 +19,15 @@ import { Card } from 'react-bootstrap';
 import { NextPage } from 'next';
 import assign from 'object-assign';
 
-// TODO: implement reset password
-
 const ResetPassword: NextPage = () => {
 	const router = useRouter();
-	const [tokenError, setTokenError] = useState<any>(null);
+	const [tokenError, setTokenError] =
+		useState<any>(undefined);
 	const [resetPassword] = useResetPasswordMutation();
 
-	const { token } = router.query;
+	const { id = '', token = '' } = router.query;
+
+	console.log(id);
 
 	return (
 		<>
@@ -42,10 +46,8 @@ const ResetPassword: NextPage = () => {
 							onSubmit={async (values, { setErrors }) => {
 								const response = await resetPassword({
 									variables: assign(values, {
-										token:
-											typeof token === 'string'
-												? token
-												: '',
+										id: id.toString(),
+										token: token.toString(),
 									}),
 									update: (cache, { data }) => {
 										cache.writeQuery<MeQuery>({
@@ -59,21 +61,25 @@ const ResetPassword: NextPage = () => {
 
 								const { data } = response;
 
-								if (data?.resetPassword.errors) {
-									const errorMap = toErrorMap(
-										data.resetPassword.errors
-									);
+								const { errors, user } =
+									data?.resetPassword!;
+
+								if (errors) {
+									const errorMap = toErrorMap(errors);
 									if ('token' in errorMap) {
 										setTokenError(errorMap.token);
 										return;
 									}
 									setErrors(errorMap);
-								} else if (data?.resetPassword.user) {
+								} else if (user) {
 									router.push('/');
 								}
 							}}
 						>
-							{({ isSubmitting, errors: { password } }) => (
+							{({
+								isSubmitting,
+								errors: { password: passwordError },
+							}) => (
 								<Form noValidate autoComplete="on">
 									<InputField
 										label="New password"
@@ -81,7 +87,7 @@ const ResetPassword: NextPage = () => {
 										name="password"
 										type="password"
 										disabled={isSubmitting}
-										error={password}
+										error={passwordError}
 										required
 									/>
 									<BlockButton

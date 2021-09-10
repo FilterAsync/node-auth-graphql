@@ -2,7 +2,7 @@ import {
 	createTransport,
 	getTestMessageUrl,
 } from 'nodemailer';
-import { Options } from 'nodemailer/lib/mailer';
+import type { Options } from 'nodemailer/lib/mailer';
 import { __PROD__ } from '../constants';
 
 // TODO implementing mail system

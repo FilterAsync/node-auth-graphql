@@ -3,7 +3,7 @@ import {
 	MeQuery,
 	useRegisterMutation,
 } from '../generated';
-import { toErrorMap, withApollo } from '../utils';
+import { toErrorMap, withApollo, sleep } from '../utils';
 import { Card } from 'react-bootstrap';
 import Link from 'next/link';
 import { Formik, Form } from 'formik';
@@ -12,7 +12,7 @@ import {
 	InputField,
 	Layout,
 } from '../components';
-import router from 'next/router';
+import { Alert } from 'react-bootstrap';
 import Head from 'next/head';
 import { NextPage } from 'next';
 
@@ -35,7 +35,12 @@ const Register: NextPage = () => {
 								email: '',
 								password: '',
 							}}
-							onSubmit={async (values, { setErrors }) => {
+							onSubmit={async (
+								values,
+								{ setErrors, setStatus }
+							) => {
+								await sleep(2e3);
+
 								const response = await register({
 									variables: {
 										credentials: values,
@@ -52,22 +57,32 @@ const Register: NextPage = () => {
 
 								const { data } = response;
 
-								const errors = data?.register.errors;
+								const { errors, user } = data?.register!;
 
 								if (errors) {
 									setErrors(toErrorMap(errors));
-								} else if (data?.register.user) {
-									router.replace('/');
+								} else if (user) {
+									setStatus('success');
 								}
 							}}
 						>
-							{({ isSubmitting, errors }) => {
+							{({ isSubmitting, errors, status }) => {
 								type Fields =
 									| 'username'
 									| 'email'
 									| 'password';
+
 								return (
 									<Form noValidate autoComplete="on">
+										{status === 'success' && (
+											<Alert variant="success">
+												<strong>success</strong>
+												<p>
+													check your email inbox for further
+													instructions.
+												</p>
+											</Alert>
+										)}
 										{['username', 'email', 'password'].map(
 											(field) => (
 												<InputField

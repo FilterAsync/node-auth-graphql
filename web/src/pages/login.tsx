@@ -11,7 +11,7 @@ import {
 	InputField,
 	Layout,
 } from '../components';
-import { toErrorMap, withApollo } from '../utils';
+import { toErrorMap, withApollo, sleep } from '../utils';
 import { Formik, Form } from 'formik';
 import { useRouter } from 'next/router';
 import { NextPage } from 'next';
@@ -36,6 +36,8 @@ const Login: NextPage = () => {
 								password: '',
 							}}
 							onSubmit={async (values, { setErrors }) => {
+								await sleep(2e3);
+
 								const response = await login({
 									variables: values,
 									update: (cache, { data }) => {
@@ -55,22 +57,25 @@ const Login: NextPage = () => {
 									setErrors(toErrorMap(errors));
 								} else if (user) {
 									const {
-										query: { returnUrl: _next },
+										query: { returnUrl },
 									} = router;
 
-									let next = '/';
+									let next = '';
 
 									try {
-										if (_next) {
+										if (returnUrl) {
 											next = decodeURIComponent(
-												_next.toString()
+												returnUrl.toString()
 											);
 										}
 									} catch (err) {
 										// URI malformed error
-										console.error(err);
 									} finally {
-										router.push(next);
+										router.push(
+											next.startsWith('/')
+												? next
+												: '/' + next
+										);
 									}
 								}
 							}}

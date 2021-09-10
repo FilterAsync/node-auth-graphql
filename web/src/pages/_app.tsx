@@ -4,6 +4,7 @@ import '../styles/index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import type { NextWebVitalsMetric } from 'next/app';
 import type { NextPage } from 'next';
+import { useEffect } from 'react';
 
 export function reportWebVitals(
 	metric: NextWebVitalsMetric
@@ -15,6 +16,12 @@ const App: NextPage<AppProps> = ({
 	Component,
 	pageProps,
 }) => {
+	useEffect(() => {
+		if (typeof window !== 'undefined') {
+			require('bootstrap/dist/js/bootstrap');
+		}
+	}, []);
+
 	return (
 		<>
 			<Head>

@@ -11,7 +11,7 @@ import {
 } from '../generated';
 import Link from 'next/link';
 import { isServerSide } from '../utils';
-import { Form, Button } from 'react-bootstrap';
+import { Form, Button, Image } from 'react-bootstrap';
 
 const { Brand, Toggle, Collapse } = BSNavbar;
 
@@ -43,27 +43,36 @@ export const Navbar: React.FC<{}> = ({}) => {
 				</>
 			);
 		} else {
+			const { me } = data;
+
 			setNavLinks(
-				<Form
-					className="d-flex"
-					onSubmit={async (event) => {
-						event.preventDefault();
-						await Promise.all([
-							logout(),
-							apollo.resetStore(),
-						]);
-					}}
-				>
-					<Button
-						type="submit"
-						disabled={logoutFetching}
-						variant="link"
-						className="nav-link"
-						role="link"
+				<>
+					<Link href="/" passHref>
+						<Nav.Link disabled>{me.username}</Nav.Link>
+					</Link>
+					<Form
+						className="d-flex"
+						onSubmit={async (event) => {
+							event.preventDefault();
+							await Promise.all([
+								logout(),
+								apollo.resetStore(),
+							]);
+						}}
 					>
-						Logout
-					</Button>
-				</Form>
+						<Button
+							type="submit"
+							disabled={logoutFetching}
+							variant="link"
+							className="nav-link"
+							title="Log out your account"
+							aria-label="Logout"
+							role="link"
+						>
+							Logout
+						</Button>
+					</Form>
+				</>
 			);
 		}
 	}, [loading, data?.me]);

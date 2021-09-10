@@ -10,7 +10,7 @@ import { Card } from 'react-bootstrap';
 import { useForgotPasswordMutation } from '../generated';
 import Link from 'next/link';
 import { Alert } from 'react-bootstrap';
-import { withApollo } from '../utils';
+import { withApollo, sleep } from '../utils';
 import { NextPage } from 'next';
 
 const ForgotPassword: NextPage = () => {
@@ -31,10 +31,13 @@ const ForgotPassword: NextPage = () => {
 								email: '',
 							}}
 							onSubmit={async (values, { setStatus }) => {
+								await sleep(3e3);
+
 								await forgotPassword({
 									variables: values,
 								});
-								setStatus({ success: true });
+
+								setStatus('success');
 							}}
 						>
 							{({ errors, isSubmitting, status }) => (
@@ -47,7 +50,7 @@ const ForgotPassword: NextPage = () => {
 										error={errors.email}
 										required
 									/>
-									{status?.success && (
+									{status === 'success' && (
 										<Alert variant="warning">
 											<strong>note</strong>
 											<div>
@@ -60,6 +63,7 @@ const ForgotPassword: NextPage = () => {
 									<BlockButton
 										type="submit"
 										aria-label="Send email"
+										disabled={isSubmitting}
 									>
 										Send
 									</BlockButton>

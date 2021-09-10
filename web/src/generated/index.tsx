@@ -12,6 +12,8 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** The javascript `Date` as string. Type represents date and time as the ISO Date string. */
+  DateTime: any;
 };
 
 export type AuthResponse = {
@@ -25,6 +27,7 @@ export type Credentials = {
   email: Scalars['String'];
   password: Scalars['String'];
 };
+
 
 export type FieldError = {
   __typename?: 'FieldError';
@@ -61,11 +64,19 @@ export type MutationForgotPasswordArgs = {
 export type MutationResetPasswordArgs = {
   password: Scalars['String'];
   token: Scalars['String'];
+  id: Scalars['String'];
 };
 
 export type Query = {
   __typename?: 'Query';
   me?: Maybe<User>;
+  emailVerify: Scalars['Boolean'];
+};
+
+
+export type QueryEmailVerifyArgs = {
+  signature: Scalars['String'];
+  token: Scalars['String'];
 };
 
 export type User = {
@@ -75,6 +86,7 @@ export type User = {
   email: Scalars['String'];
   password: Scalars['String'];
   avatar: Scalars['String'];
+  verifiedAt?: Maybe<Scalars['DateTime']>;
 };
 
 export type RegularAuthResponseFragment = { __typename?: 'AuthResponse', errors?: Maybe<Array<{ __typename?: 'FieldError', field: string, message: string }>>, user?: Maybe<{ __typename?: 'User', id: string, username: string, avatar: string }> };
@@ -111,12 +123,21 @@ export type RegisterMutationVariables = Exact<{
 export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'AuthResponse', errors?: Maybe<Array<{ __typename?: 'FieldError', field: string, message: string }>>, user?: Maybe<{ __typename?: 'User', id: string, username: string, avatar: string }> } };
 
 export type ResetPasswordMutationVariables = Exact<{
+  id: Scalars['String'];
   token: Scalars['String'];
   password: Scalars['String'];
 }>;
 
 
 export type ResetPasswordMutation = { __typename?: 'Mutation', resetPassword: { __typename?: 'AuthResponse', errors?: Maybe<Array<{ __typename?: 'FieldError', field: string, message: string }>>, user?: Maybe<{ __typename?: 'User', id: string, username: string, avatar: string }> } };
+
+export type EmailVerificationQueryVariables = Exact<{
+  token: Scalars['String'];
+  signature: Scalars['String'];
+}>;
+
+
+export type EmailVerificationQuery = { __typename?: 'Query', emailVerify: boolean };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -276,8 +297,8 @@ export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
 export const ResetPasswordDocument = gql`
-    mutation ResetPassword($token: String!, $password: String!) {
-  resetPassword(token: $token, password: $password) {
+    mutation ResetPassword($id: String!, $token: String!, $password: String!) {
+  resetPassword(id: $id, token: $token, password: $password) {
     ...RegularAuthResponse
   }
 }
@@ -297,6 +318,7 @@ export type ResetPasswordMutationFn = Apollo.MutationFunction<ResetPasswordMutat
  * @example
  * const [resetPasswordMutation, { data, loading, error }] = useResetPasswordMutation({
  *   variables: {
+ *      id: // value for 'id'
  *      token: // value for 'token'
  *      password: // value for 'password'
  *   },
@@ -309,6 +331,40 @@ export function useResetPasswordMutation(baseOptions?: Apollo.MutationHookOption
 export type ResetPasswordMutationHookResult = ReturnType<typeof useResetPasswordMutation>;
 export type ResetPasswordMutationResult = Apollo.MutationResult<ResetPasswordMutation>;
 export type ResetPasswordMutationOptions = Apollo.BaseMutationOptions<ResetPasswordMutation, ResetPasswordMutationVariables>;
+export const EmailVerificationDocument = gql`
+    query EmailVerification($token: String!, $signature: String!) {
+  emailVerify(token: $token, signature: $signature)
+}
+    `;
+
+/**
+ * __useEmailVerificationQuery__
+ *
+ * To run a query within a React component, call `useEmailVerificationQuery` and pass it any options that fit your needs.
+ * When your component renders, `useEmailVerificationQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useEmailVerificationQuery({
+ *   variables: {
+ *      token: // value for 'token'
+ *      signature: // value for 'signature'
+ *   },
+ * });
+ */
+export function useEmailVerificationQuery(baseOptions: Apollo.QueryHookOptions<EmailVerificationQuery, EmailVerificationQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<EmailVerificationQuery, EmailVerificationQueryVariables>(EmailVerificationDocument, options);
+      }
+export function useEmailVerificationLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<EmailVerificationQuery, EmailVerificationQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<EmailVerificationQuery, EmailVerificationQueryVariables>(EmailVerificationDocument, options);
+        }
+export type EmailVerificationQueryHookResult = ReturnType<typeof useEmailVerificationQuery>;
+export type EmailVerificationLazyQueryHookResult = ReturnType<typeof useEmailVerificationLazyQuery>;
+export type EmailVerificationQueryResult = Apollo.QueryResult<EmailVerificationQuery, EmailVerificationQueryVariables>;
 export const MeDocument = gql`
     query Me {
   me {

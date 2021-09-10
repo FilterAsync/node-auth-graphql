@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import 'dotenv-safe/config';
 import { buildSchema } from 'type-graphql';
 import { ApolloServer } from 'apollo-server-express';
 import { UserResolver, authChecker } from './graphql';
@@ -15,10 +14,15 @@ import {
 import mongoose from 'mongoose';
 import compression from 'compression';
 import { v4 } from 'uuid';
-import crypto from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import Redis from 'ioredis';
 import connectRedis from 'connect-redis';
 import helmet from 'helmet';
+import { sendMail } from './utils';
+
+if (!__PROD__) {
+	require('dotenv-safe/config');
+}
 
 const { env } = process;
 
@@ -35,12 +39,14 @@ const port = env.PORT || 5e3;
 		cors({
 			origin: CORS_ORIGIN,
 			credentials: true,
+			optionsSuccessStatus: 200,
 		})
 	);
 
 	app.use(compression());
 
 	app.use(helmet());
+	app.use(helmet.dnsPrefetchControl({ allow: true }));
 	app.use(
 		helmet.contentSecurityPolicy({
 			directives: {
@@ -97,7 +103,7 @@ const port = env.PORT || 5e3;
 			store: SessionStore,
 			secret: env.SESSION_SECRET,
 			cookie: {
-				maxAge: 24 * 60 * 60 * 30 * 1e3, // 1 month
+				maxAge: 24 * 60 * 60 * 1e3, // 1 month
 				httpOnly: true, // sensitive data
 				secure: __PROD__, // secure only work in https
 				sameSite: 'lax', // csrf attacks
@@ -106,10 +112,9 @@ const port = env.PORT || 5e3;
 			resave: false,
 			saveUninitialized: false,
 			genid() {
-				return crypto
-					.createHash('sha256')
+				return createHash('sha256')
 					.update(v4())
-					.update(crypto.randomBytes(32).toString('hex'))
+					.update(randomBytes(32).toString('hex'))
 					.digest('hex');
 			},
 			unset: 'destroy',
@@ -140,7 +145,7 @@ const port = env.PORT || 5e3;
 
 	const apolloServer = new ApolloServer({
 		schema: await buildSchema({
-			resolvers: [UserResolver] as const,
+			resolvers: [UserResolver],
 			validate: false,
 			authChecker,
 		}),
@@ -148,18 +153,17 @@ const port = env.PORT || 5e3;
 			req,
 			res,
 			redis,
+			sendMail,
 		}),
 	});
 
 	await apolloServer.start();
 	apolloServer.applyMiddleware({
-		app: app as any,
-		cors: {
-			origin: CORS_ORIGIN,
-		},
+		app,
+		cors: false,
 	});
 
-	app.listen({ port }, () => {
+	app.listen(port, () => {
 		console.log(
 			'server is listening on port %d in mode %s',
 			port,

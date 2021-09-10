@@ -1,0 +1,6 @@
+query EmailVerification(
+	$token: String!
+	$signature: String!
+) {
+	emailVerify(token: $token, signature: $signature)
+}

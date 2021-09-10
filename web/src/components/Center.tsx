@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import type { HTMLAttributes } from 'react';
 import { Container, ContainerProps } from 'react-bootstrap';
 
-type CenterProps = ContainerProps &
+export type CenterProps = ContainerProps &
 	HTMLAttributes<HTMLDivElement> & {};
 
 export const Center: React.FC<CenterProps> = ({
@@ -10,9 +10,11 @@ export const Center: React.FC<CenterProps> = ({
 	className,
 	...props
 }) => {
+	const classes = classNames('center');
+
 	return (
 		<Container
-			className={classNames('center', className)}
+			className={classNames(className, classes)}
 			{...props}
 		>
 			{children}

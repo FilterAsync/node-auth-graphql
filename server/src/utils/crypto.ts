@@ -1,5 +1,9 @@
 import { hash, verify } from 'argon2';
-import { createHash, BinaryToTextEncoding } from 'crypto';
+import {
+	createHash,
+	timingSafeEqual,
+	BinaryToTextEncoding,
+} from 'crypto';
 
 export const sha256 = (
 	plaintext: string,
@@ -16,3 +20,10 @@ export const comparePassword = (
 	hashedPassword: string
 ) =>
 	verify(hashedPassword, sha256(plainPassword, 'base64'));
+
+export const timingEqual = (a: string, b: string) =>
+	// crypto.timingSafeEqual throws an error if
+	// the length of the two strings differs
+
+	a.length === b.length &&
+	timingSafeEqual(Buffer.from(a), Buffer.from(b));

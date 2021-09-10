@@ -1,3 +1,4 @@
+import { isLoggedIn } from '../utils';
 import type {
 	AuthChecker,
 	MiddlewareFn,
@@ -12,7 +13,7 @@ export const guest: MiddlewareFn<AppContext> = (
 	{ context: { req } },
 	next
 ) => {
-	if ('userId' in req.session!) {
+	if (isLoggedIn(req)) {
 		throw new Error('you are already authenticated');
 	}
 	return next();

@@ -1,10 +1,12 @@
 import Joi from 'joi';
+import JoiPassword from 'joi-password';
 
 const [username, email, password] = [
 	Joi.string()
 		.min(3)
 		.max(20)
-		.regex(/\w{3,20}/)
+		.regex(/\w/)
+		.trim()
 		.required()
 		.messages({
 			'string.pattern.base': '"username" is invalid',
@@ -15,8 +17,14 @@ const [username, email, password] = [
 		.email()
 		.lowercase()
 		.required(),
-	// TODO: password strength
-	Joi.string().min(8).required(),
+	JoiPassword.string()
+		.minOfSpecialCharacters(1)
+		.minOfLowercase(1)
+		.minOfUppercase(1)
+		.minOfNumeric(1)
+		.noWhiteSpaces()
+		.min(10)
+		.required(),
 ];
 
 export const registerSchema = Joi.object().keys({

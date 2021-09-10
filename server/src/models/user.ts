@@ -1,11 +1,16 @@
 import {
-	prop as Prop,
+	Prop,
+	Pre,
 	getModelForClass as model,
-	pre as Pre,
 } from '@typegoose/typegoose';
-import crypto from 'crypto';
+import { createHash, createHmac } from 'crypto';
+import { CORS_ORIGIN } from '../constants';
 import { ObjectType, Field, ID } from 'type-graphql';
-import { hashPassword, comparePassword } from '../utils';
+import {
+	hashPassword,
+	comparePassword,
+	timingEqual,
+} from '../utils';
 
 @ObjectType('User')
 @Pre<User>('save', async function () {
@@ -20,17 +25,16 @@ export class User {
 	id?: string;
 
 	@Prop({
-		type: String,
 		required: true,
 		unique: true,
 		minlength: 3,
 		maxlength: 20,
+		immutable: true,
 	})
 	@Field()
 	username!: string;
 
 	@Prop({
-		type: String,
 		required: true,
 		unique: true,
 		minlength: 3,
@@ -41,28 +45,64 @@ export class User {
 	email!: string;
 
 	@Prop({
-		type: String,
 		required: true,
 	})
 	@Field()
 	password!: string;
 
 	@Prop({
-		type: String,
 		required: true,
 	})
 	@Field()
 	avatar!: string;
 
+	@Prop({
+		required: false,
+	})
+	@Field({ nullable: true })
+	verifiedAt!: Date;
+
 	comparePassword(password: string) {
 		return comparePassword(password, this.password);
 	}
+
 	gravatar(size: number = 96) {
-		const hash = crypto
-			.createHash('md5')
+		const hash = createHash('md5')
 			.update(this.email)
 			.digest('hex');
+
 		return `https://www.gravatar.com/avatar/${hash}?d=mp&s=${size}`;
+	}
+
+	verificationUrl() {
+		const token = createHash('sha1')
+			.update(this.email)
+			.digest('hex');
+
+		const url = `${CORS_ORIGIN}/verification?token=${token}`;
+		const signature = UserModel.signVerificationUrl(token);
+
+		return `${url}&signature=${signature}`;
+	}
+
+	static signVerificationUrl(url: string) {
+		return createHmac('sha256', 'qwerty')
+			.update(url)
+			.digest('hex');
+	}
+
+	static hasValidVerificationUrl(
+		token: string,
+		signature: string
+	) {
+		// validate the "signature" parameter in the query string
+		// if the attackers steals the verification token
+		// they will have to validate the signature
+
+		const originalSignature =
+			UserModel.signVerificationUrl(token);
+
+		return timingEqual(originalSignature, signature);
 	}
 }
 

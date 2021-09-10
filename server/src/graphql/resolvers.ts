@@ -1,4 +1,4 @@
-import { User, UserModel } from '../models';
+import { User, UserModel, ResetModel } from '../models';
 import {
 	Query,
 	Resolver,
@@ -12,8 +12,9 @@ import {
 } from 'type-graphql';
 import { AppContext } from '../types';
 import {
+	CORS_ORIGIN,
 	COOKIE_NAME,
-	FORGOT_PASSWORD_PREFIX,
+	EMAIL_VERIFICATION_PREFIX,
 } from '../constants';
 import { Credentials } from './Credentials';
 import {
@@ -22,12 +23,11 @@ import {
 } from '../validation';
 import {
 	logIn,
-	sendMail,
 	resetPassword,
-	hashToken,
+	markAsVerified,
 } from '../utils';
 import { guest } from './auth';
-import { CORS_ORIGIN } from '../constants';
+import { URL } from 'url';
 
 @ObjectType()
 class FieldError {
@@ -51,11 +51,40 @@ class AuthResponse {
 export class UserResolver {
 	@Query(() => User, { nullable: true })
 	me(@Ctx() { req }: AppContext) {
-		const { userId } = req.session!;
-		if (!userId) {
-			return null;
+		return UserModel.findById(req.session?.userId);
+	}
+
+	@UseMiddleware(guest)
+	@Query(() => Boolean)
+	async emailVerify(
+		@Arg('token') token: string,
+		@Arg('signature') signature: string,
+		@Ctx() { req, redis }: AppContext
+	): Promise<boolean> {
+		const key = EMAIL_VERIFICATION_PREFIX + token;
+
+		const userId = await redis.get(key);
+
+		if (
+			!userId ||
+			!UserModel.hasValidVerificationUrl(token, signature)
+		) {
+			return false;
 		}
-		return UserModel.findById(userId);
+
+		const user = await UserModel.findById(userId);
+
+		if (user && !user.verifiedAt) {
+			await Promise.all([
+				redis.del(key),
+				markAsVerified(user),
+				logIn(req, user.id),
+			]);
+
+			return true;
+		}
+
+		return false;
 	}
 
 	@Mutation(() => AuthResponse)
@@ -117,7 +146,7 @@ export class UserResolver {
 	async register(
 		@Arg('credentials')
 		{ username, email, password }: Credentials,
-		@Ctx() { req }: AppContext
+		@Ctx() { redis, sendMail }: AppContext
 	): Promise<AuthResponse> {
 		const { error } = registerSchema.validate({
 			username,
@@ -165,7 +194,24 @@ export class UserResolver {
 		user.avatar = user.gravatar();
 		await user.save();
 
-		await logIn(req, user.id);
+		const verificationUrl = user.verificationUrl();
+
+		const token = new URL(
+			verificationUrl!
+		).searchParams.get('token');
+
+		await redis.set(
+			EMAIL_VERIFICATION_PREFIX + token,
+			user.id,
+			'ex',
+			12 * 60 * 60
+		);
+
+		await sendMail({
+			to: email,
+			subject: 'Email verification',
+			html: `<a href="${verificationUrl}">verify</a>`,
+		});
 
 		return { user };
 	}
@@ -174,7 +220,7 @@ export class UserResolver {
 	@Mutation(() => Boolean)
 	async forgotPassword(
 		@Arg('email') email: string,
-		@Ctx() { redis }: AppContext
+		@Ctx() { sendMail }: AppContext
 	) {
 		const user = await UserModel.findOne({ email });
 		if (!user) {
@@ -183,23 +229,22 @@ export class UserResolver {
 			// return false;
 		}
 
-		const token = await hashToken(email);
+		const token = ResetModel.plaintextToken();
 
-		// one-time-only
-		await redis.del(token);
+		const reset = new ResetModel({
+			token,
+			userId: user.id,
+		});
 
-		await redis.set(
-			FORGOT_PASSWORD_PREFIX + token,
-			user.id,
-			'ex',
-			1 * 60 * 60
-		);
+		await reset.save();
 
 		await sendMail({
 			to: email,
 			subject: 'Forgot password',
 			html: `
-				<a href="${CORS_ORIGIN}/reset-password/${token}">reset password</a>
+				<a href="${reset.createUrl(token)}">
+					reset password
+				</a>
 			`,
 		});
 
@@ -209,10 +254,30 @@ export class UserResolver {
 	@UseMiddleware(guest)
 	@Mutation(() => AuthResponse)
 	async resetPassword(
+		@Arg('id') id: string,
 		@Arg('token') token: string,
 		@Arg('password') password: string,
-		@Ctx() { req, redis }: AppContext
+		@Ctx() { req, sendMail }: AppContext
 	): Promise<AuthResponse> {
+		const reset = await ResetModel.findById(id);
+
+		let user;
+
+		if (
+			!reset ||
+			!reset.isValidToken(token) ||
+			!(user = await UserModel.findById(reset.userId))
+		) {
+			return {
+				errors: [
+					{
+						field: 'token',
+						message: 'invalid token',
+					},
+				],
+			};
+		}
+
 		const { error } = forgotPasswordSchema.validate({
 			password,
 		});
@@ -228,41 +293,17 @@ export class UserResolver {
 			};
 		}
 
-		const key = FORGOT_PASSWORD_PREFIX + token;
-		const userId = await redis.get(key);
-
-		if (!userId) {
-			return {
-				errors: [
-					{
-						field: 'token',
-						message:
-							'this token does not exists or expired',
-					},
-				],
-			};
-		}
-
-		const user = await UserModel.findById(userId);
-
-		// should be unreachable because
-		// we don't implement the "remove account" feature
-		if (!user) {
-			return {
-				errors: [
-					{
-						field: 'token',
-						message: 'user no longer exists',
-					},
-				],
-			};
-		}
-
 		await Promise.all([
-			redis.del(key),
 			resetPassword(user, password),
-			logIn(req, user.id),
+			ResetModel.deleteMany({ userId: reset.userId }),
+			logIn(req, password),
 		]);
+
+		await sendMail({
+			to: user.email,
+			subject: 'password reset',
+			text: 'your password has successfully reset',
+		});
 
 		return { user };
 	}
@@ -275,12 +316,12 @@ export class UserResolver {
 		return new Promise((resolve) =>
 			req.session!.destroy((err) => {
 				// clear the cookie before the error occurs
+				// so they can log out without having any problem
 				res.clearCookie(COOKIE_NAME);
 				if (err) {
 					console.error(err);
 					resolve(false);
 				}
-				// unreachable if the error occurs
 				resolve(true);
 			})
 		);

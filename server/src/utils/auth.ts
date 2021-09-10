@@ -11,15 +11,26 @@ export const resetPassword = async (
 	await user.save();
 };
 
+export const isLoggedIn = (req: Request) => {
+	return 'userId' in req.session!;
+};
+
 export const logIn = (
 	req: Request,
 	id: string
 ): Promise<boolean> => {
 	return new Promise((resolve) => {
-		if (!('userId' in req.session!)) {
+		if (!isLoggedIn(req)) {
 			req.session!.userId = id;
 			resolve(true);
 		}
 		resolve(false);
 	});
+};
+
+export const markAsVerified = async (
+	user: DocumentType<User, BeAnObject>
+) => {
+	user.verifiedAt = new Date();
+	await user.save();
 };

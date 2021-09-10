@@ -15,7 +15,6 @@
 		"resolveJsonModule": true,
 		"removeComments": true,
 		"baseUrl": ".",
-		"noUnusedLocals": true,
 		"rootDir": "src",
 		"outDir": "dist",
 		"experimentalDecorators": true,
