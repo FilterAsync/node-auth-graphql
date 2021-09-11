@@ -1,4 +1,4 @@
-# react-apollo
+# node-auth-graphql
 
 A modern web authentication built essentially with React and GraphQL.
 
