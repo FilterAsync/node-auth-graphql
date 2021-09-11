@@ -103,11 +103,11 @@ const port = env.PORT || 5e3;
 			store: SessionStore,
 			secret: env.SESSION_SECRET,
 			cookie: {
-				maxAge: 24 * 60 * 60 * 1e3, // 1 month
+				maxAge: 24 * 60 * 60 * 1e3, // 1 day
 				httpOnly: true, // sensitive data
 				secure: __PROD__, // secure only work in https
 				sameSite: 'lax', // csrf attacks
-				// domain: __PROD__ ? '' : undefined
+				// domain: __PROD__ ? '.domain.com' : undefined
 			},
 			resave: false,
 			saveUninitialized: false,
@@ -146,7 +146,6 @@ const port = env.PORT || 5e3;
 	const apolloServer = new ApolloServer({
 		schema: await buildSchema({
 			resolvers: [UserResolver],
-			validate: false,
 			authChecker,
 		}),
 		context: ({ req, res }) => ({
