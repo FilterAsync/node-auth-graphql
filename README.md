@@ -1,6 +1,11 @@
 # node-auth-graphql
 
-A modern web authentication built essentially with React and GraphQL.
+A modern web authentication built essentially with GraphQL.
+
+## Features
+- Login, Register, Logout
+- Email verification + Resend
+- Forgot Password + Password Reset
 
 ## Notable Technologies
 
