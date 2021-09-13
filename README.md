@@ -6,6 +6,7 @@ A modern web authentication built essentially with GraphQL.
 - Login, Register, Logout
 - Email verification + Resend
 - Forgot Password + Password Reset
+- Rate limiting
 
 ## Notable Technologies
 
